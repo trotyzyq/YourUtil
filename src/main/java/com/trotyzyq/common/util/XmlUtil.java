@@ -7,10 +7,9 @@ import org.dom4j.Element;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
+import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author trotyzyq
@@ -76,6 +75,27 @@ public class XmlUtil {
         }
         System.out.println(document.asXML());
     }
+
+    /**
+     * 往指定的节点添加list
+     * @param document
+     * @param stringList
+     * @param parentName 被添加的节点名称
+     * @param nodeName  添加的节点名称
+     */
+    public static void xmlAddListNode(Document document, List<String> stringList, String parentName, String nodeName){
+        Element rootElement = document.getRootElement();
+        for (Iterator i = rootElement.elementIterator(); i.hasNext();) {
+            Element el = (Element) i.next();
+            /** 遍历至找到这个节点 **/
+            if (parentName.equals(el.getName())) {
+                for(String str : stringList){
+                    el.addElement(nodeName).setText(str);
+                }
+                break;
+            }
+        }
+    }
     /**
      * 往指定的节点添加节点信息
      * @param document document文档
@@ -117,7 +137,29 @@ public class XmlUtil {
         return null;
     }
 
-    public static void main(String[] args) {
+    /**
+     * 通过map转化成xml
+     * @param rootName 头节点名称
+     * @param map 需要生成的参数
+     * @return xml document文档
+     */
+    public static Document map2Xml(String rootName, Map map){
+        Document document = DocumentHelper.createDocument();
+        document.addElement(rootName);
+        /** 获取头节点**/
+        Element rootElement = document.getRootElement();
+        /** 遍历map并赋值**/
+        for(Iterator iterator =  map.keySet().iterator();iterator.hasNext();){
+            String name = (String) iterator.next();
+            rootElement.addElement(name).setText((String) map.get(name));
+        }
+        return document;
+    }
+
+
+    /** 生成xml **/
+    @Test
+    public void createXML(){
         Document document = DocumentHelper.createDocument();
         Element parent = document.addElement("Parent");
         parent.addElement("Age");
@@ -127,7 +169,18 @@ public class XmlUtil {
         map.put("yy","12");
         addElment(document, "Age", map);
         System.out.println(document.asXML());
-        String x = getStrByElement(document,"Age");
-        System.out.println(x);
+    }
+
+    @Test
+    public  void getStr(){
+        Map map = new HashMap();
+        map.put("xx","123");
+        map.put("yy","12");
+        Document document = map2Xml("test", map);
+        List list = new ArrayList();
+        list.add("333");
+        list.add("444");
+        xmlAddListNode(document, list, "xx" , "zz");
+        System.out.println(document.asXML());
     }
 }
