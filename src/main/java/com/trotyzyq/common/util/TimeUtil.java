@@ -23,6 +23,13 @@ public class TimeUtil {
     /** 时间格式**/
     private static String format = "yyyy-MM-dd HH:mm:ss";
 
+    /** 获取当前日期**/
+    public String getNowDate(){
+        Date d = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String dateNowStr = sdf.format(d);
+        return dateNowStr;
+    }
     /**
      * 获取当前时间戳，秒为单位
      * @return  1234567 s
@@ -622,25 +629,25 @@ public class TimeUtil {
 //        System.out.println(getTimeCut(startTimeStamp, endTimeStamp, startWork, endWork));
 //        System.out.println(getTimeCut(startTimeStamp, endTimeStamp, startWork, endWork));
 
-
-        String start = "2017-01-01 00:00:00";
-        String end = "2018-12-31 24:00:00";
-        List<Holiday> holidayList = TimeUtil.getHolidayByStartAndEnd(start, end);
-
-        /** 过滤**/
-        Set<Holiday> set = new HashSet();
-        for(Holiday holiday: holidayList){
-            set.add(holiday);
-        }
-        /** 排序**/
-        List<Holiday> newList  = new ArrayList<>();
-        set.forEach((holiday) ->{
-            String date = holiday.getDate();
-            Timestamp dateTime = stringToTimeStamp(date + " 12:00:00");
-            holiday.setDateTime(dateTime);
-            newList.add(holiday);
-        });
-        newList.sort((Holiday h1, Holiday h2)-> h1.getDateTime().compareTo(h2.getDateTime()));
-        System.out.println(1);
+//
+//        String start = "2017-01-01 00:00:00";
+//        String end = "2018-12-31 24:00:00";
+//        List<Holiday> holidayList = TimeUtil.getHolidayByStartAndEnd(start, end);
+//
+//        /** 过滤**/
+//        Set<Holiday> set = new HashSet();
+//        for(Holiday holiday: holidayList){
+//            set.add(holiday);
+//        }
+//        /** 排序**/
+//        List<Holiday> newList  = new ArrayList<>();
+//        set.forEach((holiday) ->{
+//            String date = holiday.getDate();
+//            Timestamp dateTime = stringToTimeStamp(date + " 12:00:00");
+//            holiday.setDateTime(dateTime);
+//            newList.add(holiday);
+//        });
+//        newList.sort((Holiday h1, Holiday h2)-> h1.getDateTime().compareTo(h2.getDateTime()));
+//        System.out.println(1);
     }
 }

@@ -36,8 +36,8 @@ public class Person {
     public String toString() {
         return "Person{" +
                 "name='" + name + '\'' +
-                ", age=" + age +
-                ", time=" + time +
+                ", age='" + age + '\'' +
+                ", time='" + time + '\'' +
                 '}';
     }
 }

@@ -3,16 +3,29 @@ package com.trotyzyq.common.util.rsa;
 import java.io.*;
 
 /**
- * Created by DOmmy on 2018/5/9.
+ * 流读取工具
+ * @author zyq
  */
 public class StreamUtils {
 
+    /** 默认缓冲大小**/
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
+    /**
+     * 输入流写入到输出流
+     * @param in 输入流
+     * @param out 输出流
+     */
     public static void io(InputStream in, OutputStream out) throws IOException {
         io(in, out, -1);
     }
 
+    /**
+     * 字节输入流写入到字节输出流
+     * @param in 输入流
+     * @param out 输出流
+     * @param bufferSize  每个缓冲区的大小
+     */
     public static void io(InputStream in, OutputStream out, int bufferSize) throws IOException {
         if (bufferSize == -1) {
             bufferSize = DEFAULT_BUFFER_SIZE;
@@ -26,10 +39,21 @@ public class StreamUtils {
         }
     }
 
+    /**
+     * 字符输入流写入到字符输出流
+     * @param in 输入流
+     * @param out 输出流
+     */
     public static void io(Reader in, Writer out) throws IOException {
         io(in, out, -1);
     }
 
+    /**
+     * 字符输入流写入到字符输出流
+     * @param in 输入流
+     * @param out 输出流
+     * @param bufferSize  每个缓冲区的大小
+     */
     public static void io(Reader in, Writer out, int bufferSize) throws IOException {
         if (bufferSize == -1) {
             bufferSize = DEFAULT_BUFFER_SIZE >> 1;
@@ -51,6 +75,12 @@ public class StreamUtils {
         return new SynchronizedOutputStream(out, lock);
     }
 
+    /**
+     * 从字节输入流读取文本
+     * @param in
+     * @return
+     * @throws IOException
+     */
     public static String readText(InputStream in) throws IOException {
         return readText(in, null, -1);
     }

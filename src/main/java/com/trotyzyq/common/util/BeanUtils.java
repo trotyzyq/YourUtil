@@ -7,6 +7,7 @@
  */
 package com.trotyzyq.common.util;
 
+import com.trotyzyq.common.bo.Person;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.util.Assert;
@@ -275,6 +276,14 @@ public class BeanUtils extends org.springframework.beans.BeanUtils{
 		return result;
 	}
 
+	public static void main(String[] args) {
+		Person person = new Person();
+		person.setAge("11");
 
+		Person person2 = new Person();
+		person2.setName("112");
+		BeanUtils.copyPropertiesNotNull(person, person2);
+		System.out.println(person2);
+	}
 
 }

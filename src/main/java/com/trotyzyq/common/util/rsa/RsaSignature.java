@@ -16,7 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by DOmmy on 2018/5/8.
+ * 加密验签工具
+ * @author zyq
  */
 public class RsaSignature {
 
@@ -35,9 +36,6 @@ public class RsaSignature {
 
     /**
      *  rsa内容签名
-     *
-     *
-     * @param s
      * @param content
      * @param privateKey
      * @return
@@ -49,9 +47,8 @@ public class RsaSignature {
 
     /**
      * sha256WithRsa 加签
-     *
      * @param content
-     * @param privateKey
+     * @param privateKey 密钥长度2048位
      * @return
      * @throws RsaSignException
      */
@@ -80,6 +77,13 @@ public class RsaSignature {
         }
     }
 
+    /**
+     * 从整数中获取私钥
+     * @param algorithm
+     * @param ins
+     * @return
+     * @throws Exception
+     */
     public static PrivateKey getPrivateKeyFromPKCS8(String algorithm,
                                                     InputStream ins) throws Exception {
         if (ins == null || StringUtils.isEmpty(algorithm)) {
@@ -91,12 +95,24 @@ public class RsaSignature {
         return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(encodedKey));
     }
 
+    /**
+     * 通过公钥验签
+     * @param params json字符串转换成map后的参数
+     * @param publicKey 公钥
+     * @return 验签成功 true,失败false
+     * @throws RsaSignException
+     */
     public static boolean rsaCheckV2(Map<String, String> params, String publicKey) throws RsaSignException {
         String sign = params.get("sign");
         String content = getSignCheckContentV2(params);
         return rsa256CheckContent(content, sign, publicKey);
     }
 
+    /**
+     * 对map参数进行字符串长度组合后
+     * @param params
+     * @return String
+     */
     public static String getSignCheckContentV2(Map<String, String> params) {
         if (params == null) {
             return null;
@@ -116,6 +132,14 @@ public class RsaSignature {
         return content.toString();
     }
 
+    /**
+     * 对map参数进行验签
+     * @param content
+     * @param sign
+     * @param publicKey
+     * @return
+     * @throws RsaSignException
+     */
     public static boolean rsa256CheckContent(String content, String sign, String publicKey) throws RsaSignException {
         try {
             PublicKey pubKey = getPublicKeyFromX509("RSA",
@@ -139,6 +163,13 @@ public class RsaSignature {
         }
     }
 
+    /**
+     * 从X509证书中获取公钥
+     * @param algorithm
+     * @param ins
+     * @return
+     * @throws Exception
+     */
     public static PublicKey getPublicKeyFromX509(String algorithm,
                                                  InputStream ins) throws Exception {
         KeyFactory keyFactory = KeyFactory.getInstance(algorithm);
@@ -155,9 +186,9 @@ public class RsaSignature {
 
 
 /**
-     * 公钥加密
+     * 公钥加密 已验证
      * @param content
-     * @param publicKey
+     * @param publicKey 秘钥长度2048位
      * @return
      */
     public static String rsaEncrypt(String content, String publicKey) throws RsaSignException {
@@ -193,9 +224,9 @@ public class RsaSignature {
     }
 
     /**
-     * 私钥解密
+     * 私钥解密 已验证
      * @param content
-     * @param privateKey
+     * @param privateKey 秘钥长度2048位
      * @return
      * @throws RsaSignException
      */
