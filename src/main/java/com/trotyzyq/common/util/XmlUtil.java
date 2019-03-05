@@ -7,9 +7,12 @@ import org.dom4j.Element;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author trotyzyq
@@ -119,7 +122,7 @@ public class XmlUtil {
     }
 
     /**
-     * 获取指定节点的字符串
+     * 获取指定节点的子节点字符串
      * @param document dom文档
      * @param elementName 节点名称
      * @return
@@ -137,6 +140,46 @@ public class XmlUtil {
         return null;
     }
 
+    /**
+     * 获取指定节点的子节点字符串
+     * @param str document字符串
+     * @param elementName 节点名称
+     * @return
+     */
+    public static String getStrByElement(String  str, String elementName){
+        Document document =  strToXml(str);
+        Element rootElement = document.getRootElement();
+        for (Iterator i = rootElement.elementIterator(); i.hasNext();) {
+            Element el = (Element) i.next();
+            /** 遍历至找到这个节点 **/
+            if (elementName.equals(el.getName())) {
+                String text = el.asXML();
+                return text;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取指定节点的文本
+     * @param str document字符串
+     * @param elementName 节点名称
+     * @return
+     */
+    public static String getTextByElement(String  str, String elementName){
+        Document document =  strToXml(str);
+        Element rootElement = document.getRootElement();
+        for (Iterator i = rootElement.elementIterator(); i.hasNext();) {
+            Element el = (Element) i.next();
+            System.out.println(el.getName());
+            /** 遍历至找到这个节点 **/
+            if (elementName.equals(el.getName())) {
+                String text = el.getText().trim();
+                return text;
+            }
+        }
+        return null;
+    }
     /**
      * 通过map转化成xml
      * @param rootName 头节点名称
@@ -156,6 +199,18 @@ public class XmlUtil {
         return document;
     }
 
+    private String xml = "";
+    private Document document = null;
+
+    @Before
+    public void before(){
+        Document document = DocumentHelper.createDocument();
+        Element parent = document.addElement("Parent");
+        parent.addElement("Age").setText("17");
+        parent.addElement("Name").setText("zyq");
+
+        xml =  document.asXML();
+    }
 
     /** 生成xml **/
     @Test
@@ -169,6 +224,8 @@ public class XmlUtil {
         map.put("yy","12");
         addElment(document, "Age", map);
         System.out.println(document.asXML());
+        getTextByElement(document.asXML(),"xx");
+
     }
 
     @Test
@@ -182,5 +239,60 @@ public class XmlUtil {
         list.add("444");
         xmlAddListNode(document, list, "xx" , "zz");
         System.out.println(document.asXML());
+    }
+
+    @Test
+    public void test1(){
+        String s = "<DC_RequestResult>\n" +
+                "  <ErrorInfo>字符串内容</ErrorInfo>\n" +
+                "  <IsNotAllowed>true</IsNotAllowed>\n" +
+                "  <IsSuccessful>true</IsSuccessful>\n" +
+                "  <ResultObject>\n" +
+                "<DTO_QueueNumberSourcePool>\n" +
+                "  <QueueId></QueueId>\n" +
+                "<Date></Date>\n" +
+                "      <DTO_QueNumberInfo>\n" +
+                "<QueNumberId>字符串内容</QueNumberId>\n" +
+                "        <QueNameId>字符串内容</QueNameId>\n" +
+                "        <QueNumber>字符串内容</QueNumber>\n" +
+                "        <QueNumberDate>字符串内容</QueNumberDate>\n" +
+                "        <QueNumberTime>字符串内容</QueNumberTime>\n" +
+                "        <QueNumberTimeRange>字符串内容</QueNumberTimeRange>\n" +
+                "<TimeType>字符串内容</TimeType>\n" +
+                "        <IsBookable>true</IsBookable>\n" +
+                "        <IsUsed>true</IsUsed>\n" +
+                "        <HisOrderId>字符串内容</HisOrderId>\n" +
+                "      <ExamItems>字符串内容</ExamItems>\n" +
+                "      <PatName>字符串内容</PatName>\n" +
+                "        <PatSex>字符串内容</PatSex>\n" +
+                "        <PatType>字符串内容</PatType>\n" +
+                "        <RisOrderSeqs>字符串内容</RisOrderSeqs>\n" +
+                "      </DTO_QueNumberInfo>\n" +
+                "      <DTO_QueNumberInfo>\n" +
+                "<QueNumberId>字符串内容</QueNumberId>\n" +
+                "        <QueNameId>字符串内容</QueNameId>\n" +
+                "        <QueNumber>字符串内容</QueNumber>\n" +
+                "        <QueNumberDate>字符串内容</QueNumberDate>\n" +
+                "        <QueNumberTime>字符串内容</QueNumberTime>\n" +
+                "        <QueNumberTimeRange>字符串内容</QueNumberTimeRange>\n" +
+                "<TimeType>字符串内容</TimeType>\n" +
+                "        <IsBookable>true</IsBookable>\n" +
+                "        <IsUsed>true</IsUsed>\n" +
+                "        <HisOrderId>字符串内容</HisOrderId>\n" +
+                "      <ExamItems>字符串内容</ExamItems>\n" +
+                "      <PatName>字符串内容</PatName>\n" +
+                "        <PatSex>字符串内容</PatSex>\n" +
+                "        <PatType>字符串内容</PatType>\n" +
+                "        <RisOrderSeqs>字符串内容</RisOrderSeqs>\n" +
+                "      </DTO_QueNumberInfo>\n" +
+                "</DTO_QueueNumberSourcePool>\n" +
+                "  </ResultObject>\n" +
+                "</DC_RequestResult> ".trim();
+        Pattern p = Pattern.compile("\\s*|\t|\r|\n");
+        Matcher m = p.matcher(s);
+        s = m.replaceAll("");
+//        String afS = s.replace("\"\\\\s*|\\t|\\r|\\n\"","").replace("/\\s*,","").trim();
+        System.out.println(s);
+        System.out.println(strToXml(s).asXML());
     }
 }
