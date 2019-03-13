@@ -1,18 +1,18 @@
 package com.trotyzyq.common.util;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.XML;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Lists;
+import org.dom4j.*;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.trotyzyq.common.util.StringUtil.isEmpty;
 
 /**
  * @author trotyzyq
@@ -23,23 +23,60 @@ public class XmlUtil {
 
     /**
      * xml字符串转化为json格式
-     * @param xml
      * @return
      */
-    public static String xmlToJson(String xml){
-        JSONObject object = null;
-        try {
-            object = XML.toJSONObject(xml);
-        } catch (JSONException e) {
-            e.printStackTrace();
+    public static void xmlToJson(Element element, JSONObject json){
+        // 如果是属性
+        for (Object o : element.attributes()) {
+            Attribute attr = (Attribute) o;
+            if (!isEmpty(attr.getValue())) {
+                json.put("@" + attr.getName(), attr.getValue());
+            }
         }
-        return  object.toString();
+        List<Element> chdEl = element.elements();
+        if (chdEl.isEmpty() && !isEmpty(element.getText())) {// 如果没有子元素,只有一个值
+            json.put(element.getName(), element.getText());
+        }
+
+        for (Element e : chdEl) {// 有子元素
+            if (!e.elements().isEmpty()) {// 子元素也有子元素
+                JSONObject chdjson = new JSONObject();
+                xmlToJson(e, chdjson);
+                Object o = json.get(e.getName());
+                if (o != null) {
+                    JSONArray jsona = null;
+                    if (o instanceof JSONObject) {// 如果此元素已存在,则转为jsonArray
+                        JSONObject jsono = (JSONObject) o;
+                        json.remove(e.getName());
+                        jsona = new JSONArray();
+                        jsona.add(jsono);
+                        jsona.add(chdjson);
+                    }
+                    if (o instanceof JSONArray) {
+                        jsona = (JSONArray) o;
+                        jsona.add(chdjson);
+                    }
+                    json.put(e.getName(), jsona);
+                } else {
+                    if (!chdjson.isEmpty()) {
+                        json.put(e.getName(), chdjson);
+                    }
+                }
+
+            } else {// 子元素没有子元素
+                for (Object o : element.attributes()) {
+                    Attribute attr = (Attribute) o;
+                    if (!isEmpty(attr.getValue())) {
+                        json.put("@" + attr.getName(), attr.getValue());
+                    }
+                }
+                if (!e.getText().isEmpty()) {
+                    json.put(e.getName(), e.getText());
+                }
+            }
+        }
     }
 
-    /** xml转化为字符串格式**/
-    public static void xmlToStr(Document document){
-        System.out.println(document.asXML());
-    }
 
     /**
      * 字符串转化为xml
@@ -91,7 +128,8 @@ public class XmlUtil {
         for (Iterator i = rootElement.elementIterator(); i.hasNext();) {
             Element el = (Element) i.next();
             /** 遍历至找到这个节点 **/
-            if (parentName.equals(el.getName())) {
+            String elementName = el.getName();
+            if (parentName.equals(elementName)) {
                 for(String str : stringList){
                     el.addElement(nodeName).setText(str);
                 }
@@ -120,6 +158,26 @@ public class XmlUtil {
             }
         }
     }
+
+    /**
+     * 获取指定节点的子节点
+     * @param str document字符串
+     * @param elementName 节点名称
+     * @return
+     */
+    public static Element getElementByElement(String  str, String elementName){
+        Document document =  strToXml(str);
+        Element rootElement = document.getRootElement();
+        for (Iterator i = rootElement.elementIterator(); i.hasNext();) {
+            Element el = (Element) i.next();
+            /** 遍历至找到这个节点 **/
+            if (elementName.equals(el.getName())) {
+                return  el;
+            }
+        }
+        return null;
+    }
+
 
     /**
      * 获取指定节点的子节点字符串
@@ -199,26 +257,48 @@ public class XmlUtil {
         return document;
     }
 
+    /**
+     * 将xml转换成json
+     * @param xml
+     * @param elementNames
+     * @return jsonObject
+     */
+//    public static JSONObject xml2Json(String xml, List<String> elementNames,){
+//
+//    }
     private String xml = "";
     private Document document = null;
 
     @Before
     public void before(){
-        Document document = DocumentHelper.createDocument();
-        Element parent = document.addElement("Parent");
-        parent.addElement("Age").setText("17");
-        parent.addElement("Name").setText("zyq");
+        document = DocumentHelper.createDocument();
+        Element parent = document.addElement("first");
+        Element s1 = parent.addElement("second1");
+        parent.addElement("second2").setText("s2");
+        s1.addElement("t1").setText("t1");
+        s1.addElement("t2").setText("t2");
 
         xml =  document.asXML();
     }
 
-    /** 生成xml **/
+
+    @Test
+    public void testXmlToJson(){
+        System.out.println(xml);
+        Element element = document.getRootElement();
+        JSONObject jsonObject =  new JSONObject();
+        xmlToJson(element, jsonObject);
+        System.out.println(jsonObject);
+    }
+
+    @Test
+    public void xmlAddListNode(){
+        xmlAddListNode(document, Lists.newArrayList("s3","s4"),"second1", "t3");
+        System.out.println(document.asXML());
+    }
+
     @Test
     public void createXML(){
-        Document document = DocumentHelper.createDocument();
-        Element parent = document.addElement("Parent");
-        parent.addElement("Age");
-        parent.addElement("Name").setText("zyq");
         Map map = new HashMap();
         map.put("xx","123");
         map.put("yy","12");
@@ -228,18 +308,6 @@ public class XmlUtil {
 
     }
 
-    @Test
-    public  void getStr(){
-        Map map = new HashMap();
-        map.put("xx","123");
-        map.put("yy","12");
-        Document document = map2Xml("test", map);
-        List list = new ArrayList();
-        list.add("333");
-        list.add("444");
-        xmlAddListNode(document, list, "xx" , "zz");
-        System.out.println(document.asXML());
-    }
 
     @Test
     public void test1(){
@@ -248,51 +316,49 @@ public class XmlUtil {
                 "  <IsNotAllowed>true</IsNotAllowed>\n" +
                 "  <IsSuccessful>true</IsSuccessful>\n" +
                 "  <ResultObject>\n" +
-                "<DTO_QueueNumberSourcePool>\n" +
-                "  <QueueId></QueueId>\n" +
-                "<Date></Date>\n" +
-                "      <DTO_QueNumberInfo>\n" +
-                "<QueNumberId>字符串内容</QueNumberId>\n" +
-                "        <QueNameId>字符串内容</QueNameId>\n" +
-                "        <QueNumber>字符串内容</QueNumber>\n" +
-                "        <QueNumberDate>字符串内容</QueNumberDate>\n" +
-                "        <QueNumberTime>字符串内容</QueNumberTime>\n" +
-                "        <QueNumberTimeRange>字符串内容</QueNumberTimeRange>\n" +
+                "<DC_BookResult>\n" +
+                "  <QueueId>字符串内容</QueueId>\n" +
+                "      <QueNameId>字符串内容</QueNameId>\n" +
+                "<QueueName>字符串内容</QueueName>\n" +
+                "      <QueueCode>字符串内容</QueueCode>\n" +
+                "<Checkdate>字符串内容</Checkdate>\n" +
                 "<TimeType>字符串内容</TimeType>\n" +
-                "        <IsBookable>true</IsBookable>\n" +
-                "        <IsUsed>true</IsUsed>\n" +
-                "        <HisOrderId>字符串内容</HisOrderId>\n" +
-                "      <ExamItems>字符串内容</ExamItems>\n" +
-                "      <PatName>字符串内容</PatName>\n" +
-                "        <PatSex>字符串内容</PatSex>\n" +
-                "        <PatType>字符串内容</PatType>\n" +
-                "        <RisOrderSeqs>字符串内容</RisOrderSeqs>\n" +
-                "      </DTO_QueNumberInfo>\n" +
-                "      <DTO_QueNumberInfo>\n" +
-                "<QueNumberId>字符串内容</QueNumberId>\n" +
-                "        <QueNameId>字符串内容</QueNameId>\n" +
-                "        <QueNumber>字符串内容</QueNumber>\n" +
-                "        <QueNumberDate>字符串内容</QueNumberDate>\n" +
-                "        <QueNumberTime>字符串内容</QueNumberTime>\n" +
-                "        <QueNumberTimeRange>字符串内容</QueNumberTimeRange>\n" +
-                "<TimeType>字符串内容</TimeType>\n" +
-                "        <IsBookable>true</IsBookable>\n" +
-                "        <IsUsed>true</IsUsed>\n" +
-                "        <HisOrderId>字符串内容</HisOrderId>\n" +
-                "      <ExamItems>字符串内容</ExamItems>\n" +
-                "      <PatName>字符串内容</PatName>\n" +
-                "        <PatSex>字符串内容</PatSex>\n" +
-                "        <PatType>字符串内容</PatType>\n" +
-                "        <RisOrderSeqs>字符串内容</RisOrderSeqs>\n" +
-                "      </DTO_QueNumberInfo>\n" +
-                "</DTO_QueueNumberSourcePool>\n" +
-                "  </ResultObject>\n" +
-                "</DC_RequestResult> ".trim();
+                "      <QueNumberTime>字符串内容</QueNumberTime>\n" +
+                "<PatName>字符串内容</PatName>\n" +
+                "      <PatSex>字符串内容</PatSex>\n" +
+                "      <PatType>字符串内容</PatType>\n" +
+                "<IsEmergency>字符串内容</IsEmergency>\n" +
+                "<Modality>字符串内容</Modality>\n" +
+                "<ModalityId>字符串内容</ModalityId>\n" +
+                "<InPatientId>字符串内容</InPatientId>\n" +
+                "<OutPatientId>字符串内容</OutPatientId>\n" +
+                "<TelephoneNum>字符串内容</TelephoneNum>\n" +
+                "<IsBooking>字符串内容</IsBooking>\n" +
+                "<RemindInfo>字符串内容</RemindInfo>\n" +
+                "<DC_BookResult>\n" +
+                " </ResultObject>\n" +
+                "</DC_RequestResult>";
         Pattern p = Pattern.compile("\\s*|\t|\r|\n");
         Matcher m = p.matcher(s);
         s = m.replaceAll("");
 //        String afS = s.replace("\"\\\\s*|\\t|\\r|\\n\"","").replace("/\\s*,","").trim();
         System.out.println(s);
-        System.out.println(strToXml(s).asXML());
     }
+
+    @Test
+    public void json(){
+        String xml = "<DC_RequestResult><ErrorInfo>字符串内容</ErrorInfo><IsNotAllowed>true</IsNotAllowed><IsSuccessful>true</IsSuccessful><ResultObject><DTO_QueueNumberSourcePool><QueueId/><Date/><DTO_QueNumberInfo><QueNumberId>字符串内容</QueNumberId><QueNameId>字符串内容</QueNameId><QueNumber>字符串内容</QueNumber><QueNumberDate>字符串内容</QueNumberDate><QueNumberTime>字符串内容</QueNumberTime><QueNumberTimeRange>字符串内容</QueNumberTimeRange><TimeType>字符串内容</TimeType><IsBookable>true</IsBookable><IsUsed>true</IsUsed><HisOrderId>字符串内容</HisOrderId><ExamItems>字符串内容</ExamItems><PatName>字符串内容</PatName><PatSex>字符串内容</PatSex><PatType>字符串内容</PatType><RisOrderSeqs>字符串内容</RisOrderSeqs></DTO_QueNumberInfo><DTO_QueNumberInfo><QueNumberId>字符串内容</QueNumberId><QueNameId>字符串内容</QueNameId><QueNumber>字符串内容</QueNumber><QueNumberDate>字符串内容</QueNumberDate><QueNumberTime>字符串内容</QueNumberTime><QueNumberTimeRange>字符串内容</QueNumberTimeRange><TimeType>字符串内容</TimeType><IsBookable>true</IsBookable><IsUsed>true</IsUsed><HisOrderId>字符串内容</HisOrderId><ExamItems>字符串内容</ExamItems><PatName>字符串内容</PatName><PatSex>字符串内容</PatSex><PatType>字符串内容</PatType><RisOrderSeqs>字符串内容</RisOrderSeqs></DTO_QueNumberInfo></DTO_QueueNumberSourcePool></ResultObject></DC_RequestResult>";
+    }
+
+    @Test
+    public void testGuavaMoreObjects(){
+        String x = null;
+        String s = MoreObjects.firstNonNull(x,"2");
+        System.out.println(s);
+
+        String z = "1|2" ;
+        System.out.println(z.split("\\|")[1]);
+    }
+
+
 }
