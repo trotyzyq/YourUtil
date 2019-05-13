@@ -1,4 +1,4 @@
-package com.trotyzyq.common;
+package com.trotyzyq.common.controller;
 
 import com.trotyzyq.common.util.RandomUtil;
 import com.trotyzyq.common.util.RedisUtil;
@@ -17,6 +17,7 @@ public class Controller implements InitializingBean {
 
     @RequestMapping("/rest")
     public Object rest(){
+        System.out.println(1/0);
         int i = RandomUtil.nextInt(10);
         redisUtil.set("test",i);
         redisUtil.get("test");

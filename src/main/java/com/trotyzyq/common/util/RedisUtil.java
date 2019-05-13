@@ -3,6 +3,8 @@ package com.trotyzyq.common.util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -22,15 +24,15 @@ public class RedisUtil {
     @Qualifier("protoStuffTemplate")
     private RedisTemplate redisTemplate ;
 
-//    @Autowired(required = false)
-//    public void setRedisTemplate(RedisTemplate redisTemplate) {
-//        RedisSerializer stringSerializer = new StringRedisSerializer();
-//        redisTemplate.setKeySerializer(stringSerializer);
-//        redisTemplate.setValueSerializer(stringSerializer);
-//        redisTemplate.setHashKeySerializer(stringSerializer);
-//        redisTemplate.setHashValueSerializer(stringSerializer);
-//        this.redisTemplate = redisTemplate;
-//    }
+    @Autowired(required = false)
+    public void setRedisTemplate(RedisTemplate redisTemplate) {
+        RedisSerializer stringSerializer = new StringRedisSerializer();
+        redisTemplate.setKeySerializer(stringSerializer);
+        redisTemplate.setValueSerializer(stringSerializer);
+        redisTemplate.setHashKeySerializer(stringSerializer);
+        redisTemplate.setHashValueSerializer(stringSerializer);
+        this.redisTemplate = redisTemplate;
+    }
 
     /**
      * 制定緩存失效時間

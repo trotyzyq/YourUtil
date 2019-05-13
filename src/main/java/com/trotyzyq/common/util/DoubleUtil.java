@@ -1,6 +1,9 @@
 package com.trotyzyq.common.util;
 
 
+import com.google.common.base.MoreObjects;
+import org.apache.commons.lang.StringUtils;
+
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -16,7 +19,7 @@ public class DoubleUtil {
      * @param size 随机分成size份
      * @return
      */
-    public static List<Double> getRandomList(double sum,int size){
+    public static List<Double> getRandomList(Double sum,Integer size){
         RedPackage redPackage=new RedPackage();
         redPackage.setRemainSize(size);
         redPackage.setRemainMoney(sum);
@@ -48,18 +51,31 @@ public class DoubleUtil {
 
     /**
      * double加法
-     * @param a
-     * @param b
-     * @return
+     * @return "10"
      */
-    public static  double doubleAdd(double a,double b){
-        BigDecimal bd7 = new BigDecimal(String.valueOf(a));
-        BigDecimal bd8 = new BigDecimal(String.valueOf(b));
-        return bd7.add(bd8).doubleValue();
+    public static  double doubleAdd(String a,String b){
+        if(StringUtils.isBlank(a) || StringUtils.isBlank(b)){
+            throw new RuntimeException("入参不可为null或者空");
+        }
+        BigDecimal b1 = new BigDecimal(a);
+        BigDecimal b2 = new BigDecimal(b);
+        return b1.add(b2).doubleValue();
+    }
+
+
+    /**
+     * double加法
+     * @return 0.0
+     */
+    public static  double doubleAdd(Double a,Double b){
+        if(a == null || b == null){
+            throw new RuntimeException("入参不可为null");
+        }
+        return doubleAdd(String.valueOf(a),String.valueOf(b));
     }
 
     /**Double的加**/
-    public static  double doubleAdd(double a,double b,double c){
+    public static  double doubleAdd(Double a,Double b,Double c){
         return doubleAdd(doubleAdd(a,b),c);
     }
 
@@ -68,56 +84,75 @@ public class DoubleUtil {
     /**
      * double 相减
      */
-    public static double doubleSub(double d1,double d2){
-        String d3=Double.toString(d1);
-        String d4=Double.toString(d2);
-        BigDecimal bd1 = new BigDecimal(d3);
-        BigDecimal bd2 = new BigDecimal(d4);
+    public static double doubleSub(String a,String b){
+        if(StringUtils.isBlank(a) || StringUtils.isBlank(b)){
+            throw new RuntimeException("入参不可为null或者空");
+        }
+
+        BigDecimal bd1 = new BigDecimal(a);
+        BigDecimal bd2 = new BigDecimal(b);
         return bd1.subtract(bd2).doubleValue();
     }
 
     /**
+     * double 相减
+     */
+    public static double doubleSub(Double a,Double b){
+        if(a == null || b == null){
+            throw new RuntimeException("入参不可为null");
+        }
+        return doubleSub(String.valueOf(a),String.valueOf(b));
+    }
+
+    /**
      * double乘法
-     * @param d1
-     * @param d2
-     * @return
      */
-    public static double doubleMul(double d1,double d2){
-        String d3=Double.toString(d1);
-        String d4=Double.toString(d2);
-        BigDecimal a1 = new BigDecimal(d3);
-        BigDecimal aa = new BigDecimal(d4);
-        double dd=a1.multiply(aa).doubleValue();
-        return dd;
+    public static double doubleMul(String a,String b){
+        if(StringUtils.isBlank(a) || StringUtils.isBlank(b)){
+            throw new RuntimeException("入参不可为null或者空");
+        }
+
+        BigDecimal a1 = new BigDecimal(a);
+        BigDecimal aa = new BigDecimal(b);
+        return  a1.multiply(aa).doubleValue();
+    }
+
+    /**
+     * double乘法
+     */
+    public static double doubleMul(Double a,Double b){
+        if(a == null || b == null){
+            throw new RuntimeException("入参不可为null");
+        }
+        return doubleMul(String.valueOf(a),String.valueOf(b));
     }
 
     /**
      * double 除法
-     * @param d1 double
-     * @param d2
      * @return
      */
-    public static double doubleDivide(double d1,double d2){
-        String d3=Double.toString(d1);
-        String d4=Double.toString(d2);
-        BigDecimal bd7 = new BigDecimal(d3);
-        BigDecimal bd8 = new BigDecimal(d4);
+    public static double doubleDivide(String a,String b){
+        if(StringUtils.isBlank(a) || StringUtils.isBlank(b)){
+            throw new RuntimeException("入参不可为null或者空");
+        }
+
+        BigDecimal bd7 = new BigDecimal(a);
+        BigDecimal bd8 = new BigDecimal(b);
         BigDecimal bigDecimal=bd7.divide(bd8,5,BigDecimal.ROUND_HALF_UP);
         return bigDecimal.doubleValue();
     }
 
     /**
      * double 除法
-     * @param d1 String
-     * @param d2
      * @return
      */
-    public static double doubleDivide(String d1,String d2){
-        BigDecimal bd7 = new BigDecimal(d1);
-        BigDecimal bd8 = new BigDecimal(d2);
-        BigDecimal bigDecimal=bd7.divide(bd8,5,BigDecimal.ROUND_HALF_UP);
-        return bigDecimal.doubleValue();
+    public static double doubleDivide(Double a,Double b){
+        if(a == null || b == null){
+            throw new RuntimeException("入参不可为null");
+        }
+        return doubleDivide(String.valueOf(a),String.valueOf(b));
     }
+
 
     public static void random(int n, int L){
         Random rand = new Random();
@@ -131,7 +166,8 @@ public class DoubleUtil {
     }
 
     public static void main(String[] args) {
-        random(1,7);
+        Double a = null;
+        System.out.println(doubleAdd(3d,0d));
     }
 
 }
